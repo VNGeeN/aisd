@@ -62,18 +62,19 @@ void SaveData(Student & student, string row)
 
 int CompareStrings(string const& a, string const& b) 
 {
-	return (strcmp(a.c_str(), b.c_str()));
+	return !(strcmp(a.c_str(), b.c_str()));
 }
 
 int main()
 {
 	setlocale(LC_ALL, "rus");
 	ifstream inputFile = OpenFile();
+	ifstream::pos_type position = inputFile.tellg();
 	ofstream sortFile("sort.txt");
 	string row;
-	string massivFaculty[1] = { "БИС" };
+	string massivFaculty[2] = { "ПС", "БИС" };
 	Student student;
-	for (int i = 0; i != size(massivFaculty); i++)
+	for (int i = 0; i != 2; i++)
 	{
 		while (getline(inputFile, row))
 		{
@@ -83,12 +84,16 @@ int main()
 				continue;
 			}
 			SaveData(student, row);
+
 			if (CompareStrings(massivFaculty[i], student.course))
 			{
 				sortFile << student.course << "\n";
 			}
+			cout << "gdsg" << endl;
 		}
+		inputFile.clear();
 	}
+
     return 0;
 }
 

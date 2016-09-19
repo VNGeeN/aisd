@@ -6,12 +6,18 @@
 #include <vector>
 
 using namespace std;
+//typedef vector<FacultyAndCourse> vectorFaculty;
+
+struct FacultyAndCourse
+{
+	string faculty;
+	string course;
+};
 
 struct Student
 {
 	string surname;
-	string faculty;
-	string course;
+	FacultyAndCourse faculty;
 	int point;
 };
 
@@ -47,11 +53,11 @@ void SaveData(Student & student, string row)
 		++i;
 		if (i == 2)
 		{
-			student.faculty = word;
+			student.faculty.faculty = word;
 		}
 		else if (i == 3)
 		{
-			student.course = word;
+			student.faculty.course = word;
 		}
 		else if (i == 4)
 		{
@@ -62,38 +68,98 @@ void SaveData(Student & student, string row)
 
 int CompareStrings(string const& a, string const& b) 
 {
-	return !(strcmp(a.c_str(), b.c_str()));
+	return (strcmp(a.c_str(), b.c_str()));
+}
+
+void vectorGroup(ifstream &file, vector<string> &massivCours)
+{
+	Student studentData;
+	string str;
+	bool notIdentical = true;
+	while (!file.eof())
+	{
+		getline(file, str);
+		if (GetCountWord(str) != 4)
+		{
+			continue;
+		}
+		SaveData(studentData, str);
+		if (massivCours.size() == 0)
+		{
+			massivCours.push_back(studentData.faculty.course);
+		}
+		else
+		{
+			bool isIdentefic = false;
+			for (int i = 0; i != massivCours.size(); i++)
+			{
+				if (CompareStrings(massivCours[i], studentData.faculty.course))
+				{
+					isIdentefic = true;
+				}
+				else
+				{
+					isIdentefic = false;
+					break;
+				}
+			}
+			if (isIdentefic == true)
+			{
+				massivCours.push_back(studentData.faculty.course);
+			}
+		}
+	}
+}
+
+int writeInFile(ifstream &inFile, vector<string> &massivCours, ofstream &outFile)
+{
+	int point = 0;
+	int j = 0;
+	string row;
+	Student student;
+	bool notIdentical = true;
+	for (int i = 0; i != massivCours.size(); i++)
+	{
+		while (getline(inFile, row))
+		{
+			if (GetCountWord(row) != 4)
+			{
+				continue;
+			}
+			SaveData(student, row);
+			if (CompareStrings(massivCours[i], student.faculty.course))
+			{
+				if (notIdentical)
+				{
+					outFile << student.faculty.faculty << ' ' << student.faculty.course << ' ';
+					notIdentical = false;
+				}
+				++j;
+				point += student.point;
+			}
+		}
+		outFile << point / j << "\n";
+		notIdentical = true;
+		point = 0;
+		j = 0;
+		inFile = OpenFile();
+	}
+	return 0;
 }
 
 int main()
 {
 	setlocale(LC_ALL, "rus");
 	ifstream inputFile = OpenFile();
-	ifstream::pos_type position = inputFile.tellg();
+	vector<string> massivFacultet;
+	vector<string> massivCours;
 	ofstream sortFile("sort.txt");
-	string row;
-	string massivFaculty[2] = { "ПС", "БИС" };
-	Student student;
-	for (int i = 0; i != 2; i++)
-	{
-		while (getline(inputFile, row))
-		{
-			if (GetCountWord(
-				row) != 4)
-			{
-				continue;
-			}
-			SaveData(student, row);
-
-			if (CompareStrings(massivFaculty[i], student.course))
-			{
-				sortFile << student.course << "\n";
-			}
-			cout << "gdsg" << endl;
-		}
-		inputFile.clear();
-	}
-
+	ofstream sortGrupFile("grupsort.txt");
+	bool notIdentical = true;
+	vectorGroup(inputFile, massivCours);
+	inputFile = OpenFile();
+	writeInFile(inputFile, massivCours, sortFile);
+	inputFile.close();
     return 0;
 }
 
